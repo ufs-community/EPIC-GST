@@ -59,7 +59,6 @@ AUTHOR Redline Performance Solutions LLC (from Penguin Computing recipe)
     git clone https://github.com/ufs-community/ufs-srweather-app.git
     cd ufs-srweather-app  || true
     ./manage_externals/checkout_externals  || true
-    rm build_srw.sh
     set +H
     echo "#!/bin/bash" > build_srw.sh
     echo "source /usr/share/lmod/6.6/init/bash" >> build_srw.sh
