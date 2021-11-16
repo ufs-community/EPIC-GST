@@ -1,0 +1,13 @@
+##############################################################################
+# README
+#
+# === Create Container
+#
+# sudo singularity build --sandbox ./epic-ufssrw ./epic-ufssrw.def
+#
+#############################################################################
+
+Bootstrap: docker
+From: dcvelobrew/epic-ufssrw
+
+

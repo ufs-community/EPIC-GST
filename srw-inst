@@ -1,0 +1,108 @@
+Here are the directions for pulling and running the SRW app. This will only work on Orion, because that is where the data is.
+
+cd to /work/noaa/epic-ps/$USER #(run mkdir first, if the directory does not yet exist)
+
+#load the singularity module--
+
+module load singularity
+
+#pull the singularity container--
+
+singularity pull library://dcvelobrew/default/ubuntu-hpc-stack:latest
+
+#convert the container to a sandbox--
+singularity build --sandbox ubuntu-hpc-stack-src ./ubuntu-hpc-stack-src.img
+
+#salloc a node with this command--
+salloc -N 1 -n 40 -A epic-ps -q batch -t 2:30:00 --partition=orion
+
+#check the queue to see which node was salloced for you
+
+squeue -u $USER
+
+#output will look like this--
+#             JOBID PARTITION     NAME     USER ST       TIME NODES NODELIST(REASON)
+#           3445267     debug     bash   mpotts  R      24:19 1 Orion-23-63
+#
+#find name of the node you salloc'd
+#e.g. ssh Orion-23-63
+#ssh to that node (this is a compute node that you will have all to yourself. It does not have connectivity to the internet.
+
+
+#load the singularity module again
+module load singularity
+
+#cd to /work/noaa/epic-ps/$USER
+
+cd /work/noaa/epic-ps/$USER
+
+#copy your .bashrc file from your home directory to here
+
+cp ~/.bashrc .
+
+# shell into the container using the following command
+
+singularity shell -H /work -B /work:/work -w ./ubuntu-hpc-stack-src
+
+# start bash shell
+
+bash
+
+# set your path to find conda
+
+export PATH=$PATH:/home/builder/opt/bin:/home/builder/opt/miniconda/bin
+
+#initialize your .bashrc file for conda
+
+cond init bash
+#exit the initial bash shell
+
+exit
+
+#restart bash now that .bashrc has been modified
+
+bash
+
+#again set your path to find conda
+export PATH=$PATH:/home/builder/opt/bin:/home/builder/opt/miniconda/bin
+
+#also set your path to find /home/builder/opt/bin -- this is where everything is installed in the container
+
+export PATH=$PATH:/home/builder/opt/bin
+
+#activate the regional workflow environment
+
+conda activate regional_workflow
+
+# go to the following directory in the container
+
+cd /home/builder/ufs/ufs-srweather-app/regional_workflow/ush
+
+# modify config.sh to point to where you want experiment directories--just the EXPT_SUBDIR field
+
+# generate the workflow
+
+./generate_FV3LAM_wflow.sh
+
+# cd to expt dir should be something like cd /home/builder/ufs/expt_dirs/test_4 and will show up at the end of the output from generate_FV3LAM script
+
+# copy the shell wrappers for the workflow to your expt dir
+
+cp /home/builder/ufs/ufs-srweather-app/regional_workflow/ush/wrappers/* .
+
+# source the definitions file
+
+export EXPTDIR=$PWD
+source ./var_defns.sh
+
+# now run the workflow one step at a time
+
+./run_get_ics.sh
+./run_get_lbcs.sh
+./run_make_grid.sh
+./run_make_orog.sh
+./run_make_sfc_climo.sh
+./run_make_ics.sh
+./run_make_lbcs.sh
+./run_fcst.sh
+./run_post.sh 
