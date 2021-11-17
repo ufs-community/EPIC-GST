@@ -17,9 +17,9 @@ AUTHOR Redline Performance Solutions LLC (from Penguin Computing recipe)
 %setup
     mkdir -p /opt
     # set noninteractive installation
-    export DEBIAN_FRONTEND=noninteractive
-    #install tzdata package
-    apt install -y lmod
+#   export DEBIAN_FRONTEND=noninteractive
+#   #install tzdata package
+#   apt install -y lmod
   
 %environment
     rm /bin/sh
@@ -32,7 +32,10 @@ AUTHOR Redline Performance Solutions LLC (from Penguin Computing recipe)
     source /usr/share/lmod/6.6/init/bash 
 
 %post
+    export DEBIAN_FRONTEND=noninteractive
     apt update -y --allow-unauthenticated
+    #install tzdata package
+    apt install -y lmod
     export DEBIAN_FRONTEND=noninteractive
     apt-get install -y tzdata
     # set your timezone
@@ -59,6 +62,7 @@ AUTHOR Redline Performance Solutions LLC (from Penguin Computing recipe)
     git clone https://github.com/ufs-community/ufs-srweather-app.git
     cd ufs-srweather-app  || true
     ./manage_externals/checkout_externals  || true
+    /bin/bash
     set +H
     echo "#!/bin/bash" > build_srw.sh
     echo "source /usr/share/lmod/6.6/init/bash" >> build_srw.sh

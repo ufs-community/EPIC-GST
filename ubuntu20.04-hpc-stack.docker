@@ -1,0 +1,60 @@
+FROM ubuntu:20.04
+LABEL AUTHOR Redline Performance Solutions LLC (from Penguin Computing recipe)
+RUN mkdir -p /opt
+WORKDIR /opt
+ENV DEBIAN_FRONTEND=noninteractive   
+RUN apt update -y --allow-unauthenticated
+RUN apt install -y lmod
+RUN apt install -y tzdata
+RUN ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime   
+RUN dpkg-reconfigure --frontend noninteractive tzdata 
+RUN apt -y install build-essential gfortran git openmpi-bin vim cmake python3 wget libexpat1-dev lmod 
+RUN git clone -b feature/singularity https://github.com/noaa-emc/hpc-stack.git
+WORKDIR hpc-stack
+RUN yes | ./setup_modules.sh -p /opt/hpc-modules -c config/config_custom.sh  
+RUN sed -i "10 a source /usr/share/lmod/6.6/init/bash" ./build_stack.sh
+RUN sed -i "10 a export PATH=/usr/local/sbin:/usr/local/bin:$PATH" ./build_stack.sh
+RUN sed -i "10 a export LD_LIBRARY_PATH=/usr/local/lib64:/usr/local/lib:$LD_LIBRARY_PATH" ./build_stack.sh
+RUN ./build_stack.sh -p /opt/hpc-modules -c config/config_custom.sh -y stack/stack_noaa.yaml -m 
+
+#ENV ZLIB_ROOT=/usr/local/lib
+#ENV PNETCDF_ROOT=/usr/local/lib
+#ENV NETCDF_ROOT=/usr/local/lib
+#ENV CC=mpicc
+#ENV CXX=mpicxx
+#ENV FC=mpif90
+#ENV ESMFMKFILE=/home/builder/opt/lib/esmf.mk
+#WORKDIR /home/builder/ufs/
+#RUN git clone https://github.com/ufs-community/ufs-srweather-app.git
+#WORKDIR /home/builder/ufs/ufs-srweather-app
+#RUN ./manage_externals/checkout_externals
+##RUN git clone --recurse-submodules https://github.com/noaa-emc/UFS_UTILS
+##RUN git clone --recurse-submodules https://github.com/ufs-community/ufs-weather-model
+##RUN git clone --recurse-submodules https://github.com/NOAA-EMC/UPP
+#RUN mkdir /home/builder/ufs/ufs-srweather-app/build
+#WORKDIR /home/builder/ufs/ufs-srweather-app/build
+#RUN cmake -DCMAKE_INSTALL_PREFIX=/home/builder/opt -DCMAKE_PREFIX_PATH=/home/builder/opt ..
+#RUN make VERBOSE=1 
+#WORKDIR /home/builder/ufs
+#RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+#RUN bash ./Miniconda3-latest-Linux-x86_64.sh -b -p /home/builder/opt/miniconda
+#ENV PATH=$PATH:/home/builder/opt/miniconda/bin
+#RUN git clone --recursive https://github.com/NOAA-GSD/contrib_miniconda3.git miniconda3
+#WORKDIR /home/builder/ufs/miniconda3/environments
+##RUN ls -l
+##RUN which sed
+#RUN sed -i '3 a - conda-forge' regional_workflow.yml 
+#RUN sed -i 's/^-/  -/g' regional_workflow.yml 
+#RUN sed -i 's/^  - https/#  - https/g' regional_workflow.yml 
+#WORKDIR /home/builder/ufs
+#RUN conda env create -f /home/builder/ufs/miniconda3/environments/regional_workflow.yml 
+#USER root
+#RUN \
+#  apt-get update && \
+#  apt-get install -y ruby-full
+#USER builder
+#WORKDIR /home/builder/ufs
+#RUN git clone https://github.com/christopherwharrop/rocoto.git
+#WORKDIR /home/builder/ufs/rocoto
+#ENV LIBRARY_PATH=$LIBRARY_PATH:/home/builder/opt/lib
+#RUN ./INSTALL
